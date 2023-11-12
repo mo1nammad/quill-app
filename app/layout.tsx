@@ -24,8 +24,14 @@ export default function RootLayout({
    children: React.ReactNode;
 }) {
    return (
-      <html lang="en">
-         <body className={cn("", fontSans.variable, fontVazir.variable)}>
+      <html lang="en" dir="rtl" className="dark">
+         <body
+            className={cn(
+               "min-h-screen font-vazir antialiased",
+               fontSans.variable,
+               fontVazir.variable
+            )}
+         >
             {children}
          </body>
       </html>
