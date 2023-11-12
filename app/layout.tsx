@@ -4,6 +4,8 @@ import { Inter as FontSans, Vazirmatn } from "next/font/google";
 import "./globals.css";
 import { cn } from "@/lib/utils";
 
+import Navbar from "@/components/global/Navbar";
+
 export const fontSans = FontSans({
    subsets: ["latin"],
    variable: "--font-sans",
@@ -32,6 +34,7 @@ export default function RootLayout({
                fontVazir.variable
             )}
          >
+            <Navbar />
             {children}
          </body>
       </html>
