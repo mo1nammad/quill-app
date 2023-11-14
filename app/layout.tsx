@@ -4,6 +4,7 @@ import { Inter as FontSans, Vazirmatn } from "next/font/google";
 import "./globals.css";
 import { cn } from "@/lib/utils";
 
+import Providers from "@/components/providers/index";
 import Navbar from "@/components/global/Navbar";
 
 export const fontSans = FontSans({
@@ -26,17 +27,19 @@ export default function RootLayout({
    children: React.ReactNode;
 }) {
    return (
-      <html lang="en" dir="rtl" className="dark">
-         <body
-            className={cn(
-               "min-h-screen font-vazir antialiased",
-               fontSans.variable,
-               fontVazir.variable
-            )}
-         >
-            <Navbar />
-            {children}
-         </body>
-      </html>
+      <Providers>
+         <html lang="en" dir="rtl" className="dark">
+            <body
+               className={cn(
+                  "min-h-screen font-vazir antialiased",
+                  fontSans.variable,
+                  fontVazir.variable
+               )}
+            >
+               <Navbar />
+               {children}
+            </body>
+         </html>
+      </Providers>
    );
 }
