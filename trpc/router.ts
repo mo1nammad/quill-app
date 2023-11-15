@@ -1,6 +1,12 @@
-import { router, publicProcedure } from "./trpc";
+import { router } from "./trpc";
+
+// queries
+import { authCallback, getUserFiles, deleteFile } from "./queries";
 
 export const appRouter = router({
-   hello: publicProcedure.query(async () => [1, 2, 3]),
+   authCallback,
+   getUserFiles,
+   deleteFile,
 });
+
 export type AppRouter = typeof appRouter;
