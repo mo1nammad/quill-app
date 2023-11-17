@@ -4,6 +4,7 @@ import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { trpc } from "@/app/_trpc/client";
 
+import { useEdgeStore } from "@/lib/edgestore";
 import { useUploadThing } from "@/lib/uploadthing";
 import Dropzone from "react-dropzone";
 
@@ -15,15 +16,21 @@ export default function UploadDropzone() {
    const router = useRouter();
    const [isUploading, setIsUploading] = useState(false);
    const [uploadProgress, setUploadProgress] = useState<number>(0);
-   const { startUpload } = useUploadThing("pdfUploader");
 
+   const { edgestore } = useEdgeStore();
    const { toast } = useToast();
 
    // api
-   const { mutate: startPolling } = trpc.getUTFiles.useMutation({
+   const { mutate: startPolling } = trpc.getUploadedFiles.useMutation({
       onSuccess({ id }) {
+         toast({ variant: "default", title: "فایل مورد نظر آپلود شد" });
          router.push(`/dashboard/${id}`);
       },
+      retry: true,
+      retryDelay: 500,
+   });
+
+   const { mutate: submitFile } = trpc.submitUploadedFiles.useMutation({
       retry: true,
       retryDelay: 500,
    });
@@ -43,6 +50,7 @@ export default function UploadDropzone() {
    };
 
    const handleUpload = async (acceptedFile: File[]) => {
+      setUploadProgress(0);
       // check file type
       if (acceptedFile[0].type !== "application/pdf") {
          toast({
@@ -52,16 +60,18 @@ export default function UploadDropzone() {
          });
          return;
       }
-      console.log(acceptedFile);
 
       setIsUploading(true);
-      const progressInterval = startSimulateProgress();
 
       // handle file uploading
-      console.log("uploading");
 
-      const res = await startUpload(acceptedFile);
-      console.log("uploaded");
+      const res = await edgestore.publicPdfUploader.upload({
+         file: acceptedFile[0],
+         onProgressChange(progress) {
+            setUploadProgress(progress);
+         },
+      });
+
       console.log(res);
 
       if (!res) {
@@ -70,25 +80,15 @@ export default function UploadDropzone() {
             title: "مشکلی پیش آمد",
             description: "ممکن است اتصال به اینترنت دچار اختلال شده باشد",
          });
-         clearInterval(progressInterval);
          return;
       }
 
-      const [fileResponse] = res;
-      if (!!fileResponse.key) {
-         toast({
-            variant: "destructive",
-            title: "مشکلی پیش آمد",
-            description: "ممکن است اتصال به اینترنت دچار اختلال شده باشد",
-         });
-         clearInterval(progressInterval);
-         return;
-      }
+      submitFile({
+         name: acceptedFile[0].name,
+         url: res.url,
+      });
 
-      clearInterval(progressInterval);
-      setUploadProgress(100);
-
-      startPolling({ key: fileResponse.key });
+      startPolling({ url: res.url });
    };
 
    return (

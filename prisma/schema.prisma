@@ -29,7 +29,6 @@ model File {
   name         String
   uploadStatus UploadStatus @default(PENDING)
   url          String
-  key          String
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

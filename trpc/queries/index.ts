@@ -64,23 +64,39 @@ export const deleteFile = privateProcedure
       });
    });
 
-export const getUTFiles = privateProcedure
+export const getUploadedFiles = privateProcedure
    .input(
       z.object({
-         key: z.string(),
+         url: z.string(),
       })
    )
    .mutation(async ({ ctx, input }) => {
-      const { key, userId } = { ...ctx, ...input };
+      const { url, userId } = { ...ctx, ...input };
 
       const file = await db.file.findFirst({
          where: {
-            key,
+            url,
             userId,
          },
       });
 
       if (!file) throw new TRPCError({ code: "NOT_FOUND" });
 
+      return file;
+   });
+
+export const submitUploadedFiles = privateProcedure
+   .input(
+      z.object({
+         name: z.string(),
+         url: z.string(),
+      })
+   )
+   .mutation(async ({ ctx, input }) => {
+      const { userId, name, url } = { ...ctx, ...input };
+
+      const file = await db.file.create({
+         data: { name, url, userId, uploadStatus: "PROCESSING" },
+      });
       return file;
    });
