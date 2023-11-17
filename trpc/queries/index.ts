@@ -63,3 +63,24 @@ export const deleteFile = privateProcedure
          },
       });
    });
+
+export const getUTFiles = privateProcedure
+   .input(
+      z.object({
+         key: z.string(),
+      })
+   )
+   .mutation(async ({ ctx, input }) => {
+      const { key, userId } = { ...ctx, ...input };
+
+      const file = await db.file.findFirst({
+         where: {
+            key,
+            userId,
+         },
+      });
+
+      if (!file) throw new TRPCError({ code: "NOT_FOUND" });
+
+      return file;
+   });

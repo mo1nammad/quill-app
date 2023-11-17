@@ -2,6 +2,8 @@ import React from "react";
 
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
+import UploadDropzone from "./UploadDropzone";
+
 export default function Uploadbutton() {
    return (
       <Dialog>
@@ -11,7 +13,9 @@ export default function Uploadbutton() {
             </DialogTrigger>
          </Button>
 
-         <DialogContent>example text</DialogContent>
+         <DialogContent>
+            <UploadDropzone />
+         </DialogContent>
       </Dialog>
    );
 }

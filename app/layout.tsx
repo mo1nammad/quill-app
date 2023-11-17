@@ -6,15 +6,16 @@ import { cn } from "@/lib/utils";
 
 import Providers from "@/components/providers/index";
 import Navbar from "@/components/global/Navbar";
+import { Toaster } from "@/components/ui/toaster";
 
 export const fontSans = FontSans({
    subsets: ["latin"],
    variable: "--font-sans",
 });
-export const fontVazir = Vazirmatn({
-   subsets: ["latin"],
-   variable: "--font-vazir",
-});
+// export const fontVazir = Vazirmatn({
+//    subsets: ["latin"],
+//    variable: "--font-vazir",
+// });
 
 export const metadata: Metadata = {
    title: "Create Next App",
@@ -28,14 +29,15 @@ export default function RootLayout({
 }) {
    return (
       <Providers>
-         <html lang="en" dir="rtl" className="dark">
+         <html lang="en" dir="rtl" className="">
             <body
                className={cn(
                   "min-h-screen font-vazir antialiased",
-                  fontSans.variable,
-                  fontVazir.variable
+                  fontSans.variable
+                  // fontVazir.variable
                )}
             >
+               <Toaster />
                <Navbar />
                {children}
             </body>

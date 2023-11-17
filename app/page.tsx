@@ -22,7 +22,7 @@ export default function Home() {
                کنی و ازش سوال بپرسی
             </p>
             <Button size="lg" className="group mt-5 justify-between" asChild>
-               <Link href="/">
+               <Link href="/dashboard">
                   <ArrowLeft className="w-5 h-5 mr-2 translate-x-4 transition group-hover:translate-x-1.5" />
                   امتحان کن
                </Link>

@@ -20,7 +20,7 @@ const config: Config = {
       extend: {
          fontFamily: {
             sans: ["var(--font-sans)", ...fontFamily.sans],
-            vazir: ["var(--font-vazir)", ...fontFamily.sans],
+            vazir: [/*"var(--font-vazir)",*/ "Vazirmatn", ...fontFamily.sans],
          },
          colors: {
             border: "hsl(var(--border))",
