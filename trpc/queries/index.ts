@@ -4,6 +4,7 @@ import { TRPCError } from "@trpc/server";
 
 import { z } from "zod";
 import { db } from "@/lib/db";
+import { File as DbFile } from "@prisma/client";
 
 export const authCallback = publicProcedure.query(async () => {
    const { getUser } = getKindeServerSession();
@@ -31,14 +32,17 @@ export const authCallback = publicProcedure.query(async () => {
    return { success: true };
 });
 
-export const getUserFiles = privateProcedure.query(async ({ ctx }) => {
-   const { userId } = ctx;
-   return await db.file.findMany({
-      where: {
-         userId,
-      },
-   });
-});
+export const getUserFiles = privateProcedure.query<DbFile[]>(
+   async ({ ctx }) => {
+      const { userId } = ctx;
+      const files = await db.file.findMany({
+         where: {
+            userId,
+         },
+      });
+      return files;
+   }
+);
 
 export const deleteFile = privateProcedure
    .input(

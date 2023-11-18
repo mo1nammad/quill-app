@@ -1,14 +1,13 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import { trpc } from "@/app/_trpc/client";
 
 import { useEdgeStore } from "@/lib/edgestore";
-import { useUploadThing } from "@/lib/uploadthing";
 import Dropzone from "react-dropzone";
 
-import { Cloud, File } from "lucide-react";
+import { Cloud, File, Loader2 } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 import { Progress } from "@/components/ui/progress";
 
@@ -34,20 +33,6 @@ export default function UploadDropzone() {
       retry: true,
       retryDelay: 500,
    });
-
-   const startSimulateProgress = () => {
-      setUploadProgress(0);
-
-      const interval = setInterval(() => {
-         setUploadProgress((preValue) => {
-            if (preValue >= 95) return preValue;
-
-            return preValue + 5;
-         });
-      }, 500);
-
-      return interval;
-   };
 
    const handleUpload = async (acceptedFile: File[]) => {
       setUploadProgress(0);
@@ -134,9 +119,20 @@ export default function UploadDropzone() {
                      {isUploading && (
                         <div className="w-full mt-4 max-w-xs mx-auto">
                            <Progress
+                              indicatorColor={
+                                 uploadProgress === 100
+                                    ? "bg-emerald-500"
+                                    : undefined
+                              }
                               value={uploadProgress}
                               className="h-1 w-full bg-zinc-200 dark:bg-zinc-600"
                            />
+                           {uploadProgress === 100 && (
+                              <div className="flex gap-1 items-center justify-center text-sm text-accent-foreground text-center pt-2">
+                                 <Loader2 className="h-3 w-3 animate-spin" />
+                                 درحال پردازش
+                              </div>
+                           )}
                         </div>
                      )}
                   </label>

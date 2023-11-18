@@ -19,7 +19,7 @@ export default function Page() {
       if (data?.success) router.push(origin ? `/${origin}` : "/dashboard");
       else if (error?.data?.code === "UNAUTHORIZED") {
          console.log("unauth");
-         router.push("/sign-in");
+         router.push("/api/auth/login?");
       }
    }, [data?.success, error?.data, origin, router]);
 

@@ -2,11 +2,13 @@
 
 import React, { useState } from "react";
 import { trpc } from "@/app/_trpc/client";
+import { Button } from "@/components/ui/button";
 
 import { Ghost, Loader2, MessageSquare, Plus, Trash2 } from "lucide-react";
-import { Skeleton } from "@/components/ui/skeleton";
 import Link from "next/link";
-import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
+import { useEdgeStore } from "@/lib/edgestore";
+import { useToast } from "@/components/ui/use-toast";
 
 export default function DashboardFiles() {
    // hooks
@@ -14,12 +16,18 @@ export default function DashboardFiles() {
       string | null
    >(null);
    const utils = trpc.useUtils();
+   const { edgestore } = useEdgeStore();
+   const { toast } = useToast();
 
    // api
    const { data: files, isLoading } = trpc.getUserFiles.useQuery();
    const { mutate: deleteFile, isLoading: isPending } =
       trpc.deleteFile.useMutation({
-         async onSuccess() {
+         async onSuccess({ url }) {
+            toast({
+               variant: "default",
+               title: "فایل حذف شد",
+            });
             await utils.getUserFiles.invalidate();
          },
          onMutate({ fileId }) {
@@ -28,6 +36,7 @@ export default function DashboardFiles() {
          onSettled() {
             setCurrentDeletingFile(null);
          },
+         retry: true,
       });
 
    // funcs
@@ -40,6 +49,8 @@ export default function DashboardFiles() {
          month: "long",
          day: "numeric",
       });
+
+   // handling
 
    // contents
    const fileContent = (
@@ -81,7 +92,17 @@ export default function DashboardFiles() {
                         mocked
                      </div>
                      <Button
-                        onClick={() => deleteFile({ fileId: file.id })}
+                        onClick={async () => {
+                           try {
+                              await edgestore.publicPdfUploader.delete({
+                                 url: file.url,
+                              });
+                           } catch (error) {
+                              throw error;
+                           }
+
+                           deleteFile({ fileId: file.id });
+                        }}
                         size="sm"
                         variant="destructive"
                         className="w-full"

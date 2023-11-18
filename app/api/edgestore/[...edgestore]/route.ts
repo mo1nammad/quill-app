@@ -1,11 +1,9 @@
 import { initEdgeStore } from "@edgestore/server";
 import { createEdgeStoreNextHandler } from "@edgestore/server/adapters/next/app";
 import { getKindeServerSession } from "@kinde-oss/kinde-auth-nextjs/server";
-
 type Context = {
    userId: string;
 };
-
 const es = initEdgeStore.context<Context>().create();
 
 const createContext = async (): Promise<Context> => {
@@ -22,6 +20,7 @@ const edgeStoreRouter = es.router({
          accept: ["application/pdf"],
          maxSize: 1024 * 1024 * 4,
       })
+      .beforeDelete(() => true)
       .metadata(({ ctx }) => ({
          userId: ctx.userId,
       })),
