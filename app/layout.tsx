@@ -29,7 +29,7 @@ export default function RootLayout({
 }) {
    return (
       <Providers>
-         <html lang="en" dir="rtl" className="">
+         <html lang="en" dir="rtl" className="dark">
             <body
                className={cn(
                   "min-h-screen font-vazir antialiased",

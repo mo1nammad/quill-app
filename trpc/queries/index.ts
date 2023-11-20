@@ -4,7 +4,8 @@ import { TRPCError } from "@trpc/server";
 
 import { z } from "zod";
 import { db } from "@/lib/db";
-import { File as DbFile } from "@prisma/client";
+import { File as DbFile, $Enums } from "@prisma/client";
+type UploadStatus = $Enums.UploadStatus;
 
 export const authCallback = publicProcedure.query(async () => {
    const { getUser } = getKindeServerSession();
@@ -103,4 +104,23 @@ export const submitUploadedFiles = privateProcedure
          data: { name, url, userId, uploadStatus: "PROCESSING" },
       });
       return file;
+   });
+
+export const getFileUploadedStatus = privateProcedure
+   .input(
+      z.object({
+         fileId: z.string(),
+      })
+   )
+   .query(async ({ ctx, input }): Promise<{ status: UploadStatus }> => {
+      const file = await db.file.findUnique({
+         where: {
+            id: input.fileId,
+            userId: ctx.userId,
+         },
+      });
+
+      if (!file) return { status: "PENDING" };
+
+      return { status: file.uploadStatus };
    });
