@@ -1,3 +1,6 @@
+import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
+import { Send } from "lucide-react";
 import React from "react";
 import { boolean } from "zod";
 
@@ -11,7 +14,21 @@ export default function ChatInput({ disable = false }: ChatInputProps) {
          <form className="mx-2 flex flex-row gap-3 md:last:mb-6 lg:mx-auto lg:max-w-2xl xl:max-w-3xl">
             <div className="relative flex h-full flex-1 items-stretch md:flex-col">
                <div className="relative flex flex-col w-full flex-grow p-4">
-                  <div className="relative"></div>
+                  <div className="relative">
+                     <Textarea
+                        rows={1}
+                        maxRows={4}
+                        autoFocus
+                        placeholder="سوال خود را بپرسید ..."
+                        className="resize-none pl-16 text-base py-3 scrollbar-thumb-blue scrollbar-thumb-rounded scrollbar-track-blue-lighter scrollbar-w-2 scrolling-touch"
+                     />
+                     <Button
+                        className="absolute bottom-1.5 left-[8px]"
+                        aria-label="send message"
+                     >
+                        <Send className="w-4 h-4" />
+                     </Button>
+                  </div>
                </div>
             </div>
          </form>

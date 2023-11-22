@@ -7,6 +7,11 @@ import { db } from "@/lib/db";
 import { File as DbFile, $Enums } from "@prisma/client";
 type UploadStatus = $Enums.UploadStatus;
 
+import { PDFLoader } from "langchain/document_loaders/fs/pdf";
+import { OpenAIEmbeddings } from "langchain/embeddings/openai";
+import { PineconeStore } from "langchain/vectorstores/pinecone";
+import { pinecone } from "@/lib/pinecone";
+
 export const authCallback = publicProcedure.query(async () => {
    const { getUser } = getKindeServerSession();
    const user = await getUser();
@@ -103,7 +108,48 @@ export const submitUploadedFiles = privateProcedure
       const file = await db.file.create({
          data: { name, url, userId, uploadStatus: "PROCESSING" },
       });
-      return file;
+      try {
+         const response = await fetch(url);
+         const blob = await response.blob();
+
+         const loader = new PDFLoader(blob);
+         const pageLevelContent = await loader.load();
+         const pagesAmt = pageLevelContent.length;
+
+         // vectorize and index entries document
+
+         const pineconeIndex = pinecone.Index("quill-app");
+         const embeddings = new OpenAIEmbeddings({
+            openAIApiKey: process.env.OPENAI_API_KEY,
+         });
+         await PineconeStore.fromDocuments(pageLevelContent, embeddings, {
+            pineconeIndex,
+            filter: {
+               fileId: file.id,
+               userId,
+            },
+         });
+
+         await db.file.update({
+            where: {
+               id: file.id,
+            },
+            data: {
+               uploadStatus: "SUCCEED",
+            },
+         });
+      } catch (error) {
+         console.log(error);
+
+         await db.file.update({
+            where: {
+               id: file.id,
+            },
+            data: {
+               uploadStatus: "FAILED",
+            },
+         });
+      }
    });
 
 export const getFileUploadedStatus = privateProcedure

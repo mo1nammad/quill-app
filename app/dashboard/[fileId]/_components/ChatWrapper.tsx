@@ -84,8 +84,8 @@ export default function ChatWrapper({ fileId }: { fileId: string }) {
                      "mt-6"
                   )}
                >
-                  <ChevronLeft />
                   بازگشت به داشبورد
+                  <ChevronLeft className="w-5 h-5 mr-1" />
                </Link>
             </div>
          </div>
