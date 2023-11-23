@@ -12,6 +12,7 @@ import ChatInput from "./ChatInput";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { buttonVariants } from "@/components/ui/button";
+import ChatContextProvider from "./ChatContext";
 
 export default function ChatWrapper({ fileId }: { fileId: string }) {
    const { data: fileStatus, isLoading } = trpc.getFileUploadedStatus.useQuery(
@@ -92,12 +93,14 @@ export default function ChatWrapper({ fileId }: { fileId: string }) {
       );
 
    return (
-      <div className="relative h-full flex divide-y divide-border flex-col justify-between gap-2">
-         <div className="flex-1 justify-between flex flex-col mb-28">
-            <Messages />
-         </div>
+      <ChatContextProvider fileId={fileId}>
+         <div className="relative h-full flex divide-y divide-border flex-col justify-between gap-2">
+            <div className="flex-1 justify-between flex flex-col mb-28">
+               <Messages />
+            </div>
 
-         <ChatInput />
-      </div>
+            <ChatInput />
+         </div>
+      </ChatContextProvider>
    );
 }

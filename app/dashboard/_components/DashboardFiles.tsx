@@ -12,6 +12,7 @@ import { useToast } from "@/components/ui/use-toast";
 
 export default function DashboardFiles() {
    // hooks
+   const [isDeleting, setIsDeleting] = useState(false);
    const [currentDeletingFile, setCurrentDeletingFile] = useState<
       string | null
    >(null);
@@ -21,23 +22,22 @@ export default function DashboardFiles() {
 
    // api
    const { data: files, isLoading } = trpc.getUserFiles.useQuery();
-   const { mutate: deleteFile, isLoading: isPending } =
-      trpc.deleteFile.useMutation({
-         async onSuccess({ url }) {
-            toast({
-               variant: "default",
-               title: "فایل حذف شد",
-            });
-            await utils.getUserFiles.invalidate();
-         },
-         onMutate({ fileId }) {
-            setCurrentDeletingFile(fileId);
-         },
-         onSettled() {
-            setCurrentDeletingFile(null);
-         },
-         retry: true,
-      });
+   const { mutate: deleteFile } = trpc.deleteFile.useMutation({
+      async onSuccess({ url }) {
+         toast({
+            variant: "default",
+            title: "فایل حذف شد",
+         });
+         await utils.getUserFiles.invalidate();
+      },
+      onMutate({ fileId }) {
+         setCurrentDeletingFile(fileId);
+      },
+      onSettled() {
+         setCurrentDeletingFile(null);
+      },
+      retry: true,
+   });
 
    // funcs
    const isCurrentDeleting = (id: string) =>
@@ -84,7 +84,7 @@ export default function DashboardFiles() {
 
                   <div className="px-6 mt-4 grid grid-cols-3 place-items-center py-2 gap-6 text-xs text-muted-foreground">
                      <div className="col-span-1 flex items-center gap-2">
-                        <Plus className="h-4 w-4 " />
+                        <Plus className="h-4 w-4" />
                         {formatedCreatedAt(file.createdAt)}
                      </div>
                      <div className="flex items-center gap-x-2">
@@ -94,19 +94,21 @@ export default function DashboardFiles() {
                      <Button
                         onClick={async () => {
                            try {
+                              setIsDeleting(true);
                               await edgestore.publicPdfUploader.delete({
                                  url: file.url,
                               });
+                              deleteFile({ fileId: file.id });
                            } catch (error) {
                               throw error;
+                           } finally {
+                              setIsDeleting(false);
                            }
-
-                           deleteFile({ fileId: file.id });
                         }}
                         size="sm"
                         variant="destructive"
                         className="w-full"
-                        disabled={isPending}
+                        disabled={isDeleting}
                      >
                         {isCurrentDeleting(file.id) ? (
                            <Loader2 className="w-4 h-4 animate-spin" />

@@ -81,7 +81,7 @@ export default function UploadDropzone() {
          {({ getRootProps, getInputProps, acceptedFiles }) => (
             <div
                {...getRootProps()}
-               className="border h-64 m-4 border-dashed border-border rounded-lg"
+               className="border h-72 m-4 border-dashed border-border rounded-lg"
             >
                <input {...getInputProps()} />
                <div className="flex items-center justify-center w-full h-full">
@@ -128,9 +128,14 @@ export default function UploadDropzone() {
                               className="h-1 w-full bg-zinc-200 dark:bg-zinc-600"
                            />
                            {uploadProgress === 100 && (
-                              <div className="flex gap-1 items-center justify-center text-sm text-accent-foreground text-center pt-2">
-                                 <Loader2 className="h-3 w-3 animate-spin" />
-                                 درحال پردازش
+                              <div className="flex flex-col gap-2 items-center justify-center text-sm text-accent-foreground text-center py-2">
+                                 <div className="flex items-center gap-2">
+                                    <Loader2 className="h-3 w-3 animate-spin" />
+                                    درحال پردازش
+                                 </div>
+                                 <p className="text-xs text-muted-foreground">
+                                    ممکن است یک مقدار زمانبر باشد
+                                 </p>
                               </div>
                            )}
                         </div>

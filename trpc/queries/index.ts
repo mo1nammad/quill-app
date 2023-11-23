@@ -45,6 +45,9 @@ export const getUserFiles = privateProcedure.query<DbFile[]>(
          where: {
             userId,
          },
+         orderBy: {
+            createdAt: "desc",
+         },
       });
       return files;
    }
@@ -114,6 +117,8 @@ export const submitUploadedFiles = privateProcedure
 
          const loader = new PDFLoader(blob);
          const pageLevelContent = await loader.load();
+         pageLevelContent.forEach((doc) => (doc.metadata.fileId = file.id));
+
          const pagesAmt = pageLevelContent.length;
 
          // vectorize and index entries document
@@ -124,10 +129,6 @@ export const submitUploadedFiles = privateProcedure
          });
          await PineconeStore.fromDocuments(pageLevelContent, embeddings, {
             pineconeIndex,
-            filter: {
-               fileId: file.id,
-               userId,
-            },
          });
 
          await db.file.update({
