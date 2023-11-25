@@ -1,11 +1,13 @@
 "use client";
 
 import React, { useState } from "react";
+import Link from "next/link";
 import { trpc } from "@/app/_trpc/client";
-import { Button } from "@/components/ui/button";
+import { formatDate } from "@/lib/utils";
 
 import { Ghost, Loader2, MessageSquare, Plus, Trash2 } from "lucide-react";
-import Link from "next/link";
+
+import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useEdgeStore } from "@/lib/edgestore";
 import { useToast } from "@/components/ui/use-toast";
@@ -35,6 +37,7 @@ export default function DashboardFiles() {
       },
       onSettled() {
          setCurrentDeletingFile(null);
+         setIsDeleting(false);
       },
       retry: true,
    });
@@ -42,13 +45,6 @@ export default function DashboardFiles() {
    // funcs
    const isCurrentDeleting = (id: string) =>
       id === currentDeletingFile ? true : false;
-
-   const formatedCreatedAt = (time: string) =>
-      new Date(time).toLocaleDateString("fa-IR", {
-         year: "numeric",
-         month: "long",
-         day: "numeric",
-      });
 
    // handling
 
@@ -85,7 +81,7 @@ export default function DashboardFiles() {
                   <div className="px-6 mt-4 grid grid-cols-3 place-items-center py-2 gap-6 text-xs text-muted-foreground">
                      <div className="col-span-1 flex items-center gap-2">
                         <Plus className="h-4 w-4" />
-                        {formatedCreatedAt(file.createdAt)}
+                        {formatDate(file.createdAt)}
                      </div>
                      <div className="flex items-center gap-x-2">
                         <MessageSquare className="h-4 w-4 " />
@@ -101,16 +97,15 @@ export default function DashboardFiles() {
                               deleteFile({ fileId: file.id });
                            } catch (error) {
                               throw error;
-                           } finally {
-                              setIsDeleting(false);
                            }
                         }}
                         size="sm"
+                        type="button"
                         variant="destructive"
                         className="w-full"
                         disabled={isDeleting}
                      >
-                        {isCurrentDeleting(file.id) ? (
+                        {isDeleting ? (
                            <Loader2 className="w-4 h-4 animate-spin" />
                         ) : (
                            <Trash2 className="w-4 h-4" />

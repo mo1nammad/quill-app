@@ -77,7 +77,7 @@ export async function POST(req: Request) {
       }));
 
       const response = await openai.chat.completions.create({
-         model: "gpt-3.5-turbo",
+         model: "gpt-3.5-turbo-0301",
          temperature: 0,
          stream: true,
          messages: [
@@ -124,6 +124,8 @@ export async function POST(req: Request) {
       return new StreamingTextResponse(stream);
    } catch (error) {
       console.log("[CHAT_MESSAGE]:POST", error);
-      return new NextResponse("internal server error", { status: 500 });
+      return new NextResponse(JSON.stringify({ error: "error" }), {
+         status: 500,
+      });
    }
 }

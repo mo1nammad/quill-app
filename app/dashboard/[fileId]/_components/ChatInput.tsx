@@ -18,7 +18,7 @@ export default function ChatInput({ disable = false }: ChatInputProps) {
 
    return (
       <div className="absolute bottom-0 left-0 w-full">
-         <form className="mx-2 flex flex-row gap-3 md:last:mb-6 lg:mx-auto lg:max-w-2xl xl:max-w-3xl">
+         <div className="mx-2 flex flex-row gap-3 md:last:mb-6 lg:mx-auto lg:max-w-2xl xl:max-w-3xl">
             <div className="relative flex h-full flex-1 items-stretch md:flex-col">
                <div className="relative flex flex-col w-full flex-grow p-4">
                   <div className="relative">
@@ -40,7 +40,7 @@ export default function ChatInput({ disable = false }: ChatInputProps) {
                         className="resize-none pl-16 text-base py-4 scrollbar-thumb-blue scrollbar-thumb-rounded scrollbar-track-blue-lighter scrollbar-w-2 scrolling-touch"
                      />
                      <Button
-                        className="absolute bottom-1/2 translate-y-1/2 left-[8px]"
+                        className="absolute bottom-2.5 left-[8px]"
                         disabled={isLoading || disable}
                         aria-label="send message"
                         onClick={() => {
@@ -53,7 +53,7 @@ export default function ChatInput({ disable = false }: ChatInputProps) {
                   </div>
                </div>
             </div>
-         </form>
+         </div>
       </div>
    );
 }

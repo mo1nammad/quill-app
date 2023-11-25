@@ -4,6 +4,7 @@ import { TRPCError } from "@trpc/server";
 
 import { z } from "zod";
 import { db } from "@/lib/db";
+import { INFINTE_QUERY_LIMIT } from "@/config/infinit-query";
 import { File as DbFile, $Enums } from "@prisma/client";
 type UploadStatus = $Enums.UploadStatus;
 
@@ -60,21 +61,37 @@ export const deleteFile = privateProcedure
       })
    )
    .mutation(async ({ ctx, input }) => {
-      const { userId } = ctx;
-      const file = await db.file.findUnique({
-         where: {
-            id: input.fileId,
-            userId,
-         },
-      });
-      if (!file) throw new TRPCError({ code: "NOT_FOUND" });
+      try {
+         const { userId } = ctx;
+         const file = await db.file.findUnique({
+            where: {
+               id: input.fileId,
+               userId,
+            },
+         });
+         if (!file) throw new TRPCError({ code: "NOT_FOUND" });
 
-      return await db.file.delete({
-         where: {
-            id: input.fileId,
-            userId,
-         },
-      });
+         const pineconeIndex = pinecone.Index("quill-app");
+
+         // restore vector ids for deleting
+         const fileVectors = await db.vector.findMany({
+            where: {
+               fileId: file.id,
+            },
+         });
+         const fileVectorsId = fileVectors.map((vector) => vector.id);
+         await pineconeIndex.deleteMany(fileVectorsId);
+
+         return await db.file.delete({
+            where: {
+               id: input.fileId,
+               userId,
+            },
+         });
+      } catch (error) {
+         console.log(error);
+         throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
+      }
    });
 
 export const getUploadedFiles = privateProcedure
@@ -127,8 +144,20 @@ export const submitUploadedFiles = privateProcedure
          const embeddings = new OpenAIEmbeddings({
             openAIApiKey: process.env.OPENAI_API_KEY,
          });
-         await PineconeStore.fromDocuments(pageLevelContent, embeddings, {
+
+         const vectorStore = new PineconeStore(embeddings, {
             pineconeIndex,
+         });
+         const vectorsId = await vectorStore.addDocuments(pageLevelContent);
+
+         // save vector id to database for further deleting api
+         vectorsId.forEach(async (value) => {
+            await db.vector.create({
+               data: {
+                  id: value,
+                  fileId: file.id,
+               },
+            });
          });
 
          await db.file.update({
@@ -170,4 +199,54 @@ export const getFileUploadedStatus = privateProcedure
       if (!file) return { status: "PENDING" };
 
       return { status: file.uploadStatus };
+   });
+
+export const getFileMessages = privateProcedure
+   .input(
+      z.object({
+         limit: z.number().min(1).max(100).nullish(),
+         cursor: z.string().nullish(),
+         fileId: z.string(),
+      })
+   )
+   .query(async ({ ctx, input }) => {
+      const { fileId, userId, cursor } = { ...ctx, ...input };
+      const limit = input.limit ?? INFINTE_QUERY_LIMIT;
+
+      const file = await db.file.findFirst({
+         where: {
+            id: fileId,
+            userId,
+         },
+      });
+      if (!file) throw new TRPCError({ code: "NOT_FOUND" });
+
+      const fileMessages = await db.message.findMany({
+         where: {
+            fileId,
+            userId,
+         },
+         take: limit + 1,
+         orderBy: {
+            createdAt: "desc",
+         },
+         cursor: cursor ? { id: cursor } : undefined,
+         select: {
+            id: true,
+            isUserMassage: true,
+            createdAt: true,
+            text: true,
+         },
+      });
+
+      let nextCursor: typeof cursor | undefined = undefined;
+      if (fileMessages.length > limit) {
+         const nextItem = fileMessages.pop();
+         nextCursor = nextItem?.id;
+      }
+
+      return {
+         fileMessages,
+         nextCursor,
+      };
    });

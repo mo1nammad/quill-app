@@ -68,6 +68,7 @@
 .scrollbar-track-blue-lighter::-webkit-scrollbar-track {
    --bg-opacity: 0.5;
    background-color: #00000015;
+   border-radius: 50px;
 }
 
 .scrollbar-thumb-blue::-webkit-scrollbar-thumb {
@@ -77,4 +78,14 @@
 
 .scrollbar-thumb-rounded::-webkit-scrollbar-thumb {
    border-radius: 7px;
+}
+
+html.dark .scrollbar-track-blue-lighter::-webkit-scrollbar-track {
+   --bg-opacity: 0.5;
+   background-color: rgba(144, 144, 144, 0.156);
+}
+
+html.dark .scrollbar-thumb-blue::-webkit-scrollbar-thumb {
+   --bg-opacity: 0.5;
+   background-color: #dadada74;
 }
