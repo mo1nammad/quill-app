@@ -95,7 +95,7 @@ export default function ChatWrapper({ fileId }: { fileId: string }) {
    return (
       <ChatContextProvider fileId={fileId}>
          <div className="relative h-full flex divide-y divide-border flex-col justify-between gap-2">
-            <div className="flex-1 justify-between flex flex-col mb-28">
+            <div className="flex-1 relative justify-between flex flex-col mb-28">
                <Messages fileId={fileId} />
             </div>
 

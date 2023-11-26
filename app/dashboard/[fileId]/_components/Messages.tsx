@@ -1,9 +1,11 @@
 "use client";
-import React, { useContext } from "react";
+import React, { useContext, useEffect } from "react";
 
 import { trpc } from "@/app/_trpc/client";
+import { useInView } from "react-intersection-observer";
+
 import { Loader2, MessageSquare } from "lucide-react";
-import Message from "./Message";
+import { Message } from "./Message";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ChatContext } from "./ChatContext";
 
@@ -13,12 +15,14 @@ type MessageProps = {
 
 export default function Messages({ fileId }: MessageProps) {
    const { isLoading: isAiMessageLoading } = useContext(ChatContext);
+   const { ref: lastMessageRef, inView } = useInView({
+      triggerOnce: true,
+   });
 
    const {
       data,
       isLoading: isAllMessagesLoading,
       fetchNextPage,
-      isFetching,
       isFetchingNextPage,
    } = trpc.getFileMessages.useInfiniteQuery(
       {
@@ -29,6 +33,14 @@ export default function Messages({ fileId }: MessageProps) {
          keepPreviousData: true,
       }
    );
+
+   useEffect(() => {
+      if (inView) {
+         console.log(inView);
+
+         fetchNextPage();
+      }
+   }, [inView, fetchNextPage]);
 
    const messages = data?.pages.flatMap((page) => page.fileMessages);
    const loadingMessages = {
@@ -49,6 +61,15 @@ export default function Messages({ fileId }: MessageProps) {
 
    return (
       <div className="flex max-h-[calc(100vh-3.5rem-7rem)] border-border flex-1 flex-col-reverse gap-4 p-3 overflow-y-auto scrollbar-thumb-blue scrollbar-thumb-rounded scrollbar-track-blue-lighter scrollbar-w-2 scrolling-touch">
+         {isFetchingNextPage && (
+            <div className="w-full h-6 absolute top-0 inset-x-0 flex items-center justify-center">
+               <div className="w-full h-full absolute inset-0 bg-primary blur-lg" />
+               <Loader2
+                  strokeWidth={1.5}
+                  className="w-5 h-5 text-white animate-spin"
+               />
+            </div>
+         )}
          {combinedMessages && combinedMessages.length ? (
             combinedMessages.map((message, i) => {
                const isNextMessageSamePerson =
@@ -58,6 +79,7 @@ export default function Messages({ fileId }: MessageProps) {
                if (combinedMessages[combinedMessages.length - 1])
                   return (
                      <Message
+                        ref={lastMessageRef}
                         key={message.id}
                         isNextMessageSamePerson={isNextMessageSamePerson}
                         message={message}

@@ -84,11 +84,11 @@ export async function POST(req: Request) {
             {
                role: "system",
                content:
-                  "Use the following pieces of context (or previous conversaton if needed) to answer the users question in markdown format.",
+                  "Use the following pieces of context (or previous conversaton if needed) to answer the users question in markdown format and translate it to any language user speaks.",
             },
             {
                role: "user",
-               content: `Use the following pieces of context (or previous conversaton if needed) to answer the users question in markdown format. \nIf you don't know the answer, just say that you don't know, don't try to make up an answer.
+               content: `Use the following pieces of context (or previous conversaton if needed) to answer the users question in markdown format and translate it to any language user speaks. \nIf you don't know the answer, just say that you don't know, don't try to make up an answer.
         
   \n----------------\n
   
@@ -124,8 +124,6 @@ export async function POST(req: Request) {
       return new StreamingTextResponse(stream);
    } catch (error) {
       console.log("[CHAT_MESSAGE]:POST", error);
-      return new NextResponse(JSON.stringify({ error: "error" }), {
-         status: 500,
-      });
+      return new NextResponse("internal server error", { status: 500 });
    }
 }

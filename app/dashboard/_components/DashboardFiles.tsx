@@ -105,7 +105,7 @@ export default function DashboardFiles() {
                         className="w-full"
                         disabled={isDeleting}
                      >
-                        {isDeleting ? (
+                        {isCurrentDeleting(file.id) ? (
                            <Loader2 className="w-4 h-4 animate-spin" />
                         ) : (
                            <Trash2 className="w-4 h-4" />

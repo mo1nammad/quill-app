@@ -239,7 +239,7 @@ export const getFileMessages = privateProcedure
          },
       });
 
-      let nextCursor: typeof cursor | undefined = undefined;
+      let nextCursor: typeof cursor | undefined;
       if (fileMessages.length > limit) {
          const nextItem = fileMessages.pop();
          nextCursor = nextItem?.id;

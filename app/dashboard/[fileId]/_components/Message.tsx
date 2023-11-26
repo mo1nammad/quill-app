@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { forwardRef } from "react";
 
 import { cn, formatDate } from "@/lib/utils";
 import type { ExtendedMessage } from "@/types/message";
@@ -12,19 +12,17 @@ type EachMessageProps = {
    isNextMessageSamePerson: boolean;
 };
 
-export default function Message({
-   isNextMessageSamePerson,
-   message,
-}: EachMessageProps) {
-   return (
+export const Message = forwardRef<HTMLDivElement, EachMessageProps>(
+   ({ isNextMessageSamePerson, message }, ref) => (
       <div
+         ref={ref}
          className={cn("flex flex-row-reverse justify-end items-end", {
             "justify-start": !message.isUserMassage,
          })}
       >
          <div
             className={cn(
-               "relative flex h-6 w-6 aspect-square items-center justify-center",
+               "relative flex h-6 w-6 aspect-square items-center justify-center -z-10",
                {
                   "order-2 bg-secondary border-primary border rounded-sm":
                      message.isUserMassage,
@@ -90,5 +88,7 @@ export default function Message({
             </div>
          </div>
       </div>
-   );
-}
+   )
+);
+
+Message.displayName = "Message";

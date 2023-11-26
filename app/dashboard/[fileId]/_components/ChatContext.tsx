@@ -12,7 +12,6 @@ import { useMutation } from "@tanstack/react-query";
 
 import { trpc } from "@/app/_trpc/client";
 import { useToast } from "@/components/ui/use-toast";
-import { v4 as uuidv4 } from "uuid";
 
 type ChatContextType = {
    addMessage: () => void;
@@ -162,12 +161,28 @@ export default function ChatContextProvider({ fileId, children }: AppProps) {
                   );
 
                   let updatedPages = [...old.pages];
-
-                  if (isAiMessageInserted) return old;
-
-                  // else we want to insert ai response
-
                   let latestPageMessages = updatedPages[0].fileMessages;
+
+                  // to do not overwrite ai response if inserted already
+                  if (isAiMessageInserted) {
+                     latestPageMessages.map((message) => {
+                        if (message.id === "ai-response") {
+                           return {
+                              ...message,
+                              text: aiChunks,
+                           };
+                        }
+                        return message;
+                     });
+                     updatedPages[0].fileMessages = latestPageMessages;
+
+                     return {
+                        ...old,
+                        pages: updatedPages,
+                     };
+                  }
+
+                  // else we want to insert new ai response
 
                   latestPageMessages = [
                      {
