@@ -1,7 +1,11 @@
 import React from "react";
-import auth from "@/actions/auth";
+import Link from "next/link";
+import { redirect } from "next/navigation";
+import { getKindeServerSession } from "@kinde-oss/kinde-auth-nextjs/server";
 
+import { pricingItems } from "./constants";
 import MaxWidthWrapper from "@/components/global/MaxWidthWrapper";
+import { ArrowLeft, Check, HelpCircle, Minus } from "lucide-react";
 import {
    Tooltip,
    TooltipContent,
@@ -9,15 +13,17 @@ import {
    TooltipTrigger,
 } from "@/components/ui/tooltip";
 
-import { pricingItems } from "./constants";
 import { cn } from "@/lib/utils";
-import { ArrowLeft, Check, HelpCircle, Minus } from "lucide-react";
-import Link from "next/link";
 import { buttonVariants } from "@/components/ui/button";
 import UpgradeButton from "./_components/UpgradeButton";
 
 export default async function page() {
-   const { userId } = await auth();
+   const { getUser } = getKindeServerSession();
+   const user = await getUser();
+
+   if (!user) return redirect("/");
+   const userId = user.id;
+
    return (
       <MaxWidthWrapper className="mb-8 mt-24 text-center max-w-7xl">
          <div className="mx-auto mb-10 sm:max-w-xl">
