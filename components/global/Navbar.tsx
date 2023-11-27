@@ -3,9 +3,9 @@ import MaxWidthWrapper from "./MaxWidthWrapper";
 import Link from "next/link";
 
 import { buttonVariants } from "../ui/button";
-import NavbarRoutes from "./NavbarRoutes";
+import NavbarLinks from "./NavbarLinks";
 
-export default async function Navbar() {
+export default function Navbar() {
    return (
       <nav className="sticky h-14 inset-x-0 top-0 z-30 w-full border-b border-b-border bg-background/60 backdrop-blur-lg transition-all">
          <MaxWidthWrapper>
@@ -25,7 +25,7 @@ export default async function Navbar() {
                   >
                      تعرفه ها
                   </Link>
-                  <NavbarRoutes />
+                  <NavbarLinks />
                </div>
             </div>
          </MaxWidthWrapper>

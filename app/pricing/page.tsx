@@ -156,7 +156,11 @@ export default async function page() {
                            <div className="p-5">
                               {plan === "Free" ? (
                                  <Link
-                                    href={userId ? "/dashboard" : "/sign-in"}
+                                    href={
+                                       userId
+                                          ? "/dashboard"
+                                          : "/api/auth/login?post_login_redirect_url=/dashboard"
+                                    }
                                     className={buttonVariants({
                                        className: "w-full",
                                        variant: "secondary",
@@ -170,7 +174,7 @@ export default async function page() {
                                  <UpgradeButton />
                               ) : (
                                  <Link
-                                    href="/sign-in"
+                                    href="/api/auth/login?post_login_redirect_url=/dashboard"
                                     className={buttonVariants({
                                        className: "w-full",
                                     })}
