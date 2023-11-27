@@ -9,11 +9,6 @@ export default async function auth(...config: ConfigAuth[]) {
    const user = await getUser();
    if (!user || !user.id) throw new Error("Unauthorized");
 
-   const returnObj: Record<string, any> = { userId: user.id };
-
-   config.forEach((value) => {
-      returnObj[value] = user[value];
-   });
-
-   return returnObj;
+   const { id, ...rest } = user;
+   return { userId: id, ...rest };
 }

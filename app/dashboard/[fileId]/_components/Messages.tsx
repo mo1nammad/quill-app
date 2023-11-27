@@ -23,7 +23,6 @@ export default function Messages({ fileId }: MessageProps) {
       data,
       isLoading: isAllMessagesLoading,
       fetchNextPage,
-      isFetchingNextPage,
    } = trpc.getFileMessages.useInfiniteQuery(
       {
          fileId,
@@ -61,22 +60,13 @@ export default function Messages({ fileId }: MessageProps) {
 
    return (
       <div className="flex max-h-[calc(100vh-3.5rem-7rem)] border-border flex-1 flex-col-reverse gap-4 p-3 overflow-y-auto scrollbar-thumb-blue scrollbar-thumb-rounded scrollbar-track-blue-lighter scrollbar-w-2 scrolling-touch">
-         {isFetchingNextPage && (
-            <div className="w-full h-6 absolute top-0 inset-x-0 flex items-center justify-center">
-               <div className="w-full h-full absolute inset-0 bg-primary blur-lg" />
-               <Loader2
-                  strokeWidth={1.5}
-                  className="w-5 h-5 text-white animate-spin"
-               />
-            </div>
-         )}
          {combinedMessages && combinedMessages.length ? (
             combinedMessages.map((message, i) => {
                const isNextMessageSamePerson =
                   combinedMessages[i - 1]?.isUserMassage ===
                   combinedMessages[i]?.isUserMassage;
 
-               if (combinedMessages[combinedMessages.length - 1])
+               if (combinedMessages[combinedMessages.length - 2])
                   return (
                      <Message
                         ref={lastMessageRef}
