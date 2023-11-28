@@ -15,6 +15,8 @@ const postInputSchema = zod.object({
    message: zod.string().min(1),
 });
 
+export const runtime = "edge";
+
 export async function POST(req: Request) {
    try {
       const { userId } = await auth();
