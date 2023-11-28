@@ -123,7 +123,6 @@ export default function ChatContextProvider({ fileId, children }: AppProps) {
          );
       },
       onSuccess: async (stream) => {
-         setIsLoading(false);
          if (!stream)
             return toast({
                title: "مشکلی در ارسال پیام به وجود امد",
@@ -143,71 +142,72 @@ export default function ChatContextProvider({ fileId, children }: AppProps) {
             aiChunks += textDecoder.decode(value);
 
             // add ai stream message to queryClient
-            trpcUtils.getFileMessages.setInfiniteData(
-               {
-                  fileId,
-               },
-               (old) => {
-                  if (!old)
-                     return {
-                        pageParams: [],
-                        pages: [],
-                     };
-
-                  const isAiMessageInserted = old.pages.some((page) =>
-                     page.fileMessages.some(
-                        (message) => message.id === "ai-response"
-                     )
-                  );
-
-                  let updatedPages = [...old.pages];
-                  let latestPageMessages = updatedPages[0].fileMessages;
-
-                  // to do not overwrite ai response if inserted already
-                  if (isAiMessageInserted) {
-                     latestPageMessages.map((message) => {
-                        if (message.id === "ai-response") {
-                           return {
-                              ...message,
-                              text: aiChunks,
-                           };
-                        }
-                        return message;
-                     });
-                     updatedPages[0].fileMessages = latestPageMessages;
-
-                     return {
-                        ...old,
-                        pages: updatedPages,
-                     };
-                  }
-
-                  // else we want to insert new ai response
-
-                  latestPageMessages = [
-                     {
-                        createdAt: new Date().toISOString(),
-                        id: "ai-response",
-                        isUserMassage: false,
-                        text: aiChunks,
-                     },
-                     ...latestPageMessages,
-                  ];
-
-                  // set new pages
-                  updatedPages[0] = {
-                     ...updatedPages[0],
-                     fileMessages: latestPageMessages,
+         }
+         setIsLoading(false);
+         trpcUtils.getFileMessages.setInfiniteData(
+            {
+               fileId,
+            },
+            (old) => {
+               if (!old)
+                  return {
+                     pageParams: [],
+                     pages: [],
                   };
 
-                  // return new fileMessages untill invalidate
+               const isAiMessageInserted = old.pages.some((page) =>
+                  page.fileMessages.some(
+                     (message) => message.id === "ai-response"
+                  )
+               );
+
+               let updatedPages = [...old.pages];
+               let latestPageMessages = updatedPages[0].fileMessages;
+
+               // to do not overwrite ai response if inserted already
+               if (isAiMessageInserted) {
+                  latestPageMessages.map((message) => {
+                     if (message.id === "ai-response") {
+                        return {
+                           ...message,
+                           text: aiChunks,
+                        };
+                     }
+                     return message;
+                  });
+                  updatedPages[0].fileMessages = latestPageMessages;
+
                   return {
                      ...old,
                      pages: updatedPages,
                   };
                }
-            );
-         }
+
+               // else we want to insert new ai response
+
+               latestPageMessages = [
+                  {
+                     createdAt: new Date().toISOString(),
+                     id: "ai-response",
+                     isUserMassage: false,
+                     text: aiChunks,
+                  },
+                  ...latestPageMessages,
+               ];
+
+               // set new pages
+               updatedPages[0] = {
+                  ...updatedPages[0],
+                  fileMessages: latestPageMessages,
+               };
+
+               // return new fileMessages untill invalidate
+               return {
+                  ...old,
+                  pages: updatedPages,
+               };
+            }
+         );
       },
       onSettled: async () => {
          await trpcUtils.getFileMessages.invalidate({ fileId });
