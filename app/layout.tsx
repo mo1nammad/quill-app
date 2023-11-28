@@ -5,6 +5,8 @@ import "./globals.css";
 import { cn, constructMetaData } from "@/lib/utils";
 
 import Providers from "@/components/providers/index";
+import { ThemeProvider } from "@/components/providers/ThemeProvider";
+
 import Navbar from "@/components/global/Navbar";
 import { Toaster } from "@/components/ui/toaster";
 
@@ -26,7 +28,7 @@ export default function RootLayout({
 }) {
    return (
       <Providers>
-         <html lang="en" dir="rtl" className="dark">
+         <html lang="en" dir="rtl" suppressHydrationWarning>
             <body
                className={cn(
                   "min-h-screen font-vazir antialiased",
@@ -34,9 +36,15 @@ export default function RootLayout({
                   // fontVazir.variable
                )}
             >
-               <Toaster />
-               <Navbar />
-               {children}
+               <ThemeProvider
+                  attribute="class"
+                  defaultTheme="system"
+                  enableSystem
+               >
+                  <Toaster />
+                  <Navbar />
+                  {children}
+               </ThemeProvider>
             </body>
          </html>
       </Providers>

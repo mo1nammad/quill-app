@@ -7,6 +7,7 @@ import { buttonVariants } from "../ui/button";
 import NavbarLinks from "./NavbarLinks";
 import MobileNav from "./MobileNav";
 import { getKindeServerSession } from "@kinde-oss/kinde-auth-nextjs/server";
+import ThemeSwitch from "./ThemeSwitch";
 
 export default async function Navbar() {
    const { getUser } = getKindeServerSession();
@@ -16,9 +17,12 @@ export default async function Navbar() {
       <nav className="sticky h-14 inset-x-0 top-0 z-30 w-full border-b border-b-border bg-background/60 backdrop-blur-lg transition-all">
          <MaxWidthWrapper>
             <div className="flex h-14 items-center justify-between border-b">
-               <Link href="/" className="flex z-40 font-semibold font-sans">
-                  <span>Quill</span>
-               </Link>
+               <div className="flex items-center w-fit gap-5">
+                  <Link href="/" className="flex z-40 font-semibold font-sans">
+                     <span>Quill</span>
+                  </Link>
+                  <ThemeSwitch />
+               </div>
 
                <MobileNav user={user} />
 
