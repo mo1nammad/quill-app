@@ -35,8 +35,6 @@ export default function Messages({ fileId }: MessageProps) {
 
    useEffect(() => {
       if (inView) {
-         console.log(inView);
-
          fetchNextPage();
       }
    }, [inView, fetchNextPage]);
