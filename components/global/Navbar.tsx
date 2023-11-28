@@ -3,9 +3,15 @@ import MaxWidthWrapper from "./MaxWidthWrapper";
 import Link from "next/link";
 
 import { buttonVariants } from "../ui/button";
-import NavbarLinks from "./NavbarLinks";
 
-export default function Navbar() {
+import NavbarLinks from "./NavbarLinks";
+import MobileNav from "./MobileNav";
+import { getKindeServerSession } from "@kinde-oss/kinde-auth-nextjs/server";
+
+export default async function Navbar() {
+   const { getUser } = getKindeServerSession();
+   const user = await getUser();
+
    return (
       <nav className="sticky h-14 inset-x-0 top-0 z-30 w-full border-b border-b-border bg-background/60 backdrop-blur-lg transition-all">
          <MaxWidthWrapper>
@@ -13,7 +19,8 @@ export default function Navbar() {
                <Link href="/" className="flex z-40 font-semibold font-sans">
                   <span>Quill</span>
                </Link>
-               {/* todo :add mobile navigation */}
+
+               <MobileNav user={user} />
 
                <div className="hidden items-center gap-x-4 sm:flex">
                   <Link

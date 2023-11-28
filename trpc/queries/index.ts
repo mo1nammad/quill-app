@@ -74,13 +74,17 @@ export const deleteFile = privateProcedure
          const pineconeIndex = pinecone.Index("quill-app");
 
          // restore vector ids for deleting
-         const fileVectors = await db.vector.findMany({
-            where: {
-               fileId: file.id,
-            },
-         });
-         const fileVectorsId = fileVectors.map((vector) => vector.id);
-         await pineconeIndex.deleteMany(fileVectorsId);
+         try {
+            const fileVectors = await db.vector.findMany({
+               where: {
+                  fileId: file.id,
+               },
+            });
+            const fileVectorsId = fileVectors.map((vector) => vector.id);
+            await pineconeIndex.deleteMany(fileVectorsId);
+         } catch (error) {
+            console.log(error);
+         }
 
          return await db.file.delete({
             where: {
@@ -93,6 +97,21 @@ export const deleteFile = privateProcedure
          throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
       }
    });
+
+export const getUploadedFileAmount = privateProcedure.query(
+   async ({ ctx: { userId } }) => {
+      const fileAmount = await db.file.count({
+         where: {
+            userId,
+         },
+      });
+
+      // TODO add Pro Plan limits
+      return {
+         amount: fileAmount,
+      };
+   }
+);
 
 export const getUploadedFiles = privateProcedure
    .input(
@@ -138,6 +157,19 @@ export const submitUploadedFiles = privateProcedure
 
          const pagesAmt = pageLevelContent.length;
 
+         // TODO add PRO limits after adding subscription plan
+         // as user is not pro
+         const isFreeExceeded = pagesAmt > 5;
+         if (isFreeExceeded) {
+            return await db.file.update({
+               where: {
+                  id: file.id,
+               },
+               data: {
+                  uploadStatus: "FAILED",
+               },
+            });
+         }
          // vectorize and index entries document
 
          const pineconeIndex = pinecone.Index("quill-app");

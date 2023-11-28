@@ -27,7 +27,7 @@ export default async function Page() {
                فایل های من
             </h1>
 
-            <Uploadbutton />
+            <Uploadbutton userId={user.id} />
          </div>
 
          <DashboardFiles />

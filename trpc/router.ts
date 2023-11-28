@@ -9,6 +9,7 @@ import {
    submitUploadedFiles,
    getFileUploadedStatus,
    getFileMessages,
+   getUploadedFileAmount,
 } from "./queries";
 
 export const appRouter = router({
@@ -19,6 +20,7 @@ export const appRouter = router({
    submitUploadedFiles,
    getFileUploadedStatus,
    getFileMessages,
+   getUploadedFileAmount,
 });
 
 export type AppRouter = typeof appRouter;

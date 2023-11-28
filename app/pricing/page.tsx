@@ -21,8 +21,7 @@ export default async function page() {
    const { getUser } = getKindeServerSession();
    const user = await getUser();
 
-   if (!user) return redirect("/");
-   const userId = user.id;
+   const userId = user?.id;
 
    return (
       <MaxWidthWrapper className="mb-8 mt-24 text-center max-w-7xl">
@@ -159,7 +158,7 @@ export default async function page() {
                                     href={
                                        userId
                                           ? "/dashboard"
-                                          : "/api/auth/login?post_login_redirect_url=/dashboard"
+                                          : "/sign-in?post_login_redirect_url=/dashboard"
                                     }
                                     className={buttonVariants({
                                        className: "w-full",
@@ -174,7 +173,7 @@ export default async function page() {
                                  <UpgradeButton />
                               ) : (
                                  <Link
-                                    href="/api/auth/login?post_login_redirect_url=/dashboard"
+                                    href="/sign-in?post_login_redirect_url=/dashboard"
                                     className={buttonVariants({
                                        className: "w-full",
                                     })}

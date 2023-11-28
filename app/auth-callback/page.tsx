@@ -2,9 +2,10 @@
 
 import React, { useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { trpc } from "../_trpc/client";
-import { Loader2 } from "lucide-react";
 import { useKindeBrowserClient } from "@kinde-oss/kinde-auth-nextjs";
+import { trpc } from "../_trpc/client";
+
+import { Loader2 } from "lucide-react";
 
 export default function Page() {
    const router = useRouter();
@@ -22,17 +23,16 @@ export default function Page() {
       if (data?.success) router.push(origin ? `/${origin}` : "/dashboard");
       else if (error?.data?.code === "UNAUTHORIZED") {
          console.log("unauth");
-         router.push("/api/auth/login?post_login_redirect_url=/dashboard");
+         router.push("/sign-in?post_login_redirect_url=/dashboard");
       }
    }, [data?.success, error?.data, origin, router]);
 
    useEffect(() => {
       if (!user || !user.id) {
-         router.push("/api/auth/login");
+         router.push("/sign-in");
       }
    }, []);
 
-   if (!user || !user.id) return null;
    return (
       <div className="flex mt-24 w-full justify-center">
          <div className="flex flex-col items-center gap-2">

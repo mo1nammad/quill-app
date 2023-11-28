@@ -96,7 +96,7 @@ export default function DashboardFiles() {
                               });
                               deleteFile({ fileId: file.id });
                            } catch (error) {
-                              throw error;
+                              console.log(error);
                            }
                         }}
                         size="sm"

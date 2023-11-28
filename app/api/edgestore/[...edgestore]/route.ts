@@ -1,3 +1,4 @@
+import { db } from "@/lib/db";
 import { initEdgeStore } from "@edgestore/server";
 import { createEdgeStoreNextHandler } from "@edgestore/server/adapters/next/app";
 import { getKindeServerSession } from "@kinde-oss/kinde-auth-nextjs/server";
@@ -20,10 +21,21 @@ const edgeStoreRouter = es.router({
          accept: ["application/pdf"],
          maxSize: 1024 * 1024 * 4,
       })
+      .beforeUpload(async ({ ctx }) => {
+         const filesAmount = await db.file.count({
+            where: {
+               userId: ctx.userId,
+            },
+         });
+         if (filesAmount >= 5) return false;
+
+         return true;
+      })
       .beforeDelete(() => true)
       .metadata(({ ctx }) => ({
          userId: ctx.userId,
       })),
+   // TODO add Pro Plan router
 });
 const handler = createEdgeStoreNextHandler({
    router: edgeStoreRouter,

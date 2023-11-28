@@ -23,7 +23,7 @@ export default async function NavbarLinks() {
             />
          ) : (
             <Link
-               href={"/api/auth/login"}
+               href="/sign-in"
                className={buttonVariants({
                   variant: "default",
                   size: "sm",
