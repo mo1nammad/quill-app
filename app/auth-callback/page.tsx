@@ -22,7 +22,6 @@ export default function Page() {
    useEffect(() => {
       if (data?.success) router.push(origin ? `/${origin}` : "/dashboard");
       else if (error?.data?.code === "UNAUTHORIZED") {
-         console.log("unauth");
          router.push("/sign-in?post_login_redirect_url=/dashboard");
       }
    }, [data?.success, error?.data, origin, router]);

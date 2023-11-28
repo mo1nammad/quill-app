@@ -105,8 +105,6 @@ export default function ChatContextProvider({ fileId, children }: AppProps) {
          };
       },
       onError: (error, variable, context) => {
-         console.log(error);
-
          toast({
             title: "مشکلی به وجود آمد",
             description:

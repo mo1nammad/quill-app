@@ -57,8 +57,6 @@ export default function UploadDropzone() {
          },
       });
 
-      console.log(res);
-
       if (!res) {
          toast({
             variant: "destructive",
