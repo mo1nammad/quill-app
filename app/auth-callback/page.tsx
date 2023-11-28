@@ -4,9 +4,12 @@ import React, { useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { trpc } from "../_trpc/client";
 import { Loader2 } from "lucide-react";
+import { useKindeBrowserClient } from "@kinde-oss/kinde-auth-nextjs";
 
 export default function Page() {
    const router = useRouter();
+   const { user } = useKindeBrowserClient();
+
    const searchParams = useSearchParams();
 
    const origin = searchParams.get("origin");
@@ -23,6 +26,13 @@ export default function Page() {
       }
    }, [data?.success, error?.data, origin, router]);
 
+   useEffect(() => {
+      if (!user || !user.id) {
+         router.push("/api/auth/login");
+      }
+   }, []);
+
+   if (!user || !user.id) return null;
    return (
       <div className="flex mt-24 w-full justify-center">
          <div className="flex flex-col items-center gap-2">
