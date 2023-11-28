@@ -58,7 +58,9 @@ export default function ChatContextProvider({ fileId, children }: AppProps) {
             throw new Error("Failed to send message");
          }
 
-         return response.body;
+         return response.json() as Promise<{
+            response: string | null;
+         }>;
       },
 
       onMutate: async ({ message }) => {
@@ -120,96 +122,37 @@ export default function ChatContextProvider({ fileId, children }: AppProps) {
             { fileMessages: previousMessages }
          );
       },
-      onSuccess: async (stream) => {
-         if (!stream)
-            return toast({
-               title: "مشکلی در ارسال پیام به وجود امد",
-               variant: "destructive",
-            });
-
-         const reader = stream.getReader();
-         const textDecoder = new TextDecoder();
-
-         let aiChunks = "";
-         while (true) {
-            const { done, value } = await reader.read();
-            if (done) {
-               break;
-            }
-
-            aiChunks += textDecoder.decode(value);
-
-            // add ai stream message to queryClient
-         }
-         setIsLoading(false);
-         trpcUtils.getFileMessages.setInfiniteData(
-            {
-               fileId,
-            },
-            (old) => {
-               if (!old)
-                  return {
-                     pageParams: [],
-                     pages: [],
-                  };
-
-               const isAiMessageInserted = old.pages.some((page) =>
-                  page.fileMessages.some(
-                     (message) => message.id === "ai-response"
-                  )
-               );
-
-               let updatedPages = [...old.pages];
-               let latestPageMessages = updatedPages[0].fileMessages;
-
-               // to do not overwrite ai response if inserted already
-               if (isAiMessageInserted) {
-                  latestPageMessages.map((message) => {
-                     if (message.id === "ai-response") {
-                        return {
-                           ...message,
-                           text: aiChunks,
-                        };
-                     }
-                     return message;
-                  });
-                  updatedPages[0].fileMessages = latestPageMessages;
-
-                  return {
-                     ...old,
-                     pages: updatedPages,
-                  };
-               }
-
-               // else we want to insert new ai response
-
-               latestPageMessages = [
-                  {
-                     createdAt: new Date().toISOString(),
-                     id: "ai-response",
-                     isUserMassage: false,
-                     text: aiChunks,
-                  },
-                  ...latestPageMessages,
-               ];
-
-               // set new pages
-               updatedPages[0] = {
-                  ...updatedPages[0],
-                  fileMessages: latestPageMessages,
-               };
-
-               // return new fileMessages untill invalidate
+      onSuccess: (data) => {
+         trpcUtils.getFileMessages.setInfiniteData({ fileId }, (old) => {
+            if (!old) {
                return {
-                  ...old,
-                  pages: updatedPages,
+                  pageParams: [],
+                  pages: [],
                };
             }
-         );
+            let updatedPages = [...old.pages];
+            let latestMessages = updatedPages[0].fileMessages;
+            latestMessages = [
+               {
+                  createdAt: new Date().toISOString(),
+                  id: "ai-resposne",
+                  isUserMassage: false,
+                  text: data.response ?? "failed to get response",
+               },
+               ...latestMessages,
+            ];
+
+            updatedPages[0].fileMessages = latestMessages;
+
+            return {
+               ...old,
+               pages: updatedPages,
+            };
+         });
       },
       onSettled: async () => {
-         await trpcUtils.getFileMessages.invalidate({ fileId });
          setIsLoading(false);
+         await trpcUtils.getFileMessages.invalidate({ fileId });
       },
    });
 

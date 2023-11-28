@@ -10,6 +10,7 @@ import { openai } from "@/lib/openai";
 import { OpenAIStream, StreamingTextResponse } from "ai";
 
 import * as zod from "zod";
+import { getKindeServerSession } from "@kinde-oss/kinde-auth-nextjs/server";
 const postInputSchema = zod.object({
    fileId: zod.string(),
    message: zod.string().min(1),
@@ -17,11 +18,13 @@ const postInputSchema = zod.object({
 
 export async function POST(req: Request) {
    try {
-      const { userId } = await auth();
+      const { getUser } = getKindeServerSession();
+      const user = await getUser();
+      if (!user) return new NextResponse("Unauthorized", { status: 401 });
+      const { id: userId } = user;
 
       //validation request body
-      const validatedData = postInputSchema.parse(await req.json());
-      const { fileId, message } = validatedData;
+      const { fileId, message } = postInputSchema.parse(await req.json());
 
       const file = await db.file.findUnique({
          where: {
@@ -35,7 +38,7 @@ export async function POST(req: Request) {
             status: 404,
          });
 
-      const createdMessage = await db.message.create({
+      await db.message.create({
          data: {
             userId,
             isUserMassage: true,
@@ -60,8 +63,6 @@ export async function POST(req: Request) {
          fileId,
       });
 
-      console.log(result);
-
       const prevMessages = await db.message.findMany({
          where: {
             fileId,
@@ -80,8 +81,7 @@ export async function POST(req: Request) {
 
       const response = await openai.chat.completions.create({
          model: "gpt-3.5-turbo-0301",
-         temperature: 0,
-         stream: true,
+
          messages: [
             {
                role: "system",
@@ -110,20 +110,33 @@ export async function POST(req: Request) {
          ],
       });
 
-      const stream = OpenAIStream(response, {
-         onCompletion: async (completion) => {
-            await db.message.create({
-               data: {
-                  text: completion,
-                  isUserMassage: false,
-                  fileId,
-                  userId,
-               },
-            });
+      // const stream = OpenAIStream(response, {
+      //    onCompletion: async (completion) => {
+      //       await db.message.create({
+      //          data: {
+      //             text: completion,
+      //             isUserMassage: false,
+      //             fileId,
+      //             userId,
+      //          },
+      //       });
+      //    },
+      // });
+
+      // return new StreamingTextResponse(stream);
+      const aiResponse = await db.message.create({
+         data: {
+            isUserMassage: false,
+            text:
+               response.choices[0].message.content ??
+               "مشکلی با هوش مصنوعی بوجود اومده لطفا با ادمین سایت تماس حاصل کنید",
+            fileId,
+            userId,
          },
       });
-
-      return new StreamingTextResponse(stream);
+      return NextResponse.json({
+         response: aiResponse.text,
+      });
    } catch (error) {
       console.log("[CHAT_MESSAGE]:POST", error);
       return new NextResponse("internal server error", { status: 500 });
