@@ -15,7 +15,7 @@ const postInputSchema = zod.object({
    message: zod.string().min(1),
 });
 
-export const maxDuration = 25; // 25 seconds
+export const runtime = "edge";
 
 export async function POST(req: Request) {
    try {
