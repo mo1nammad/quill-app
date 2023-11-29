@@ -16,6 +16,8 @@ const postInputSchema = zod.object({
    message: zod.string().min(1),
 });
 
+export const runtime = "edge";
+
 export async function POST(req: Request) {
    try {
       const { getUser } = getKindeServerSession();
@@ -31,6 +33,7 @@ export async function POST(req: Request) {
             id: fileId,
             userId,
          },
+         cacheStrategy: { swr: 60, ttl: 60 },
       });
 
       if (!file)
@@ -72,6 +75,7 @@ export async function POST(req: Request) {
             createdAt: "asc",
          },
          take: 6,
+         cacheStrategy: { swr: 60, ttl: 60 },
       });
 
       const formatedMessages = prevMessages.map((msg) => ({
