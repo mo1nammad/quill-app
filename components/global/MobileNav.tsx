@@ -37,12 +37,14 @@ export default function MobileNav({ user }: { user: KindeUser | null }) {
             </Button>
          </SheetTrigger>
          <SheetContent side="top">
-            {!!user && (
-               <div className="flex flex-col mt-5 font-sans">
+            <div className="flex flex-col mt-5 font-sans">
+               {user?.given_name || user?.family_name ? (
                   <h5>{`${user?.given_name} ${user?.family_name}`}</h5>
+               ) : null}
+               {user?.email ? (
                   <p className="text-sm text-muted-foreground">{user?.email}</p>
-               </div>
-            )}
+               ) : null}
+            </div>
 
             <ul className="pt-6 flex flex-col w-full h-fit gap-5">
                {!user ? (
