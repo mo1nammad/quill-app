@@ -9,10 +9,10 @@ export default function ThemeSwitch() {
    const { setTheme, theme, systemTheme } = useTheme();
    const [isDark, setIsDark] = useState(false);
 
-   const storage = localStorage;
-   const themeSaved = storage.getItem("Local-theme");
-
    useEffect(() => {
+      const storage = window?.localStorage ?? null;
+      const themeSaved = storage?.getItem("Local-theme");
+
       if (!themeSaved && theme === "system") {
          if (systemTheme === "dark") {
             setIsDark(true);
@@ -22,7 +22,7 @@ export default function ThemeSwitch() {
       } else {
          themeSaved === "true" ? setIsDark(true) : setIsDark(false);
       }
-   }, [systemTheme, themeSaved, theme]);
+   }, [systemTheme, theme]);
 
    useEffect(() => {
       setTheme(isDark ? "dark" : "light");
@@ -35,7 +35,7 @@ export default function ThemeSwitch() {
          checked={isDark}
          onCheckedChange={(v) => {
             setIsDark(v);
-            storage.setItem("Local-theme", `${v}`);
+            window.localStorage.setItem("Local-theme", `${v}`);
          }}
          icon={isDark ? Moon : Sun}
          iconClassName="w-4 h-4"
