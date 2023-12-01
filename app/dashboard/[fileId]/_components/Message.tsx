@@ -73,16 +73,12 @@ export const Message = forwardRef<HTMLDivElement, EachMessageProps>(
                         }
                      )}
                   >
-                     {message.id !== "isPending" ? (
-                        formatDate(message.createdAt, {
-                           month: "short",
-                           day: "numeric",
-                           hour: "numeric",
-                           minute: "numeric",
-                        })
-                     ) : (
-                        <Loader2 className="w-3 h-3 text-muted-foreground animate-spin" />
-                     )}
+                     {formatDate(message.createdAt, {
+                        month: "short",
+                        day: "numeric",
+                        hour: "numeric",
+                        minute: "numeric",
+                     })}
                   </div>
                )}
             </div>

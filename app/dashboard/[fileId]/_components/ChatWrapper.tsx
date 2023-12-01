@@ -1,7 +1,6 @@
 "use client";
 
 import React from "react";
-import { useParams } from "next/navigation";
 import { trpc } from "@/app/_trpc/client";
 
 import { ChevronLeft, Loader2, XCircle } from "lucide-react";

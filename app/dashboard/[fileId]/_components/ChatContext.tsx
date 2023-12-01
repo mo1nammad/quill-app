@@ -39,7 +39,7 @@ export default function ChatContextProvider({ fileId, children }: AppProps) {
 
    const trpcUtils = trpc.useUtils();
 
-   const { mutate: sendMessage, status } = useMutation({
+   const { mutate: sendMessage } = useMutation({
       mutationFn: async ({
          fileId,
          message,
@@ -58,9 +58,7 @@ export default function ChatContextProvider({ fileId, children }: AppProps) {
             throw new Error("Failed to send message");
          }
 
-         return response.json() as Promise<{
-            response: string | null;
-         }>;
+         return response.body;
       },
 
       onMutate: async ({ message }) => {
@@ -122,33 +120,32 @@ export default function ChatContextProvider({ fileId, children }: AppProps) {
             { fileMessages: previousMessages }
          );
       },
-      onSuccess: (data) => {
-         trpcUtils.getFileMessages.setInfiniteData({ fileId }, (old) => {
-            if (!old) {
-               return {
-                  pageParams: [],
-                  pages: [],
-               };
+      onSuccess: async (stream) => {
+         setIsLoading(false);
+         if (!stream)
+            return toast({
+               title: "مشکلی به وجود آمد",
+               description:
+                  "دسترسی به اینترنت خود را چک کنید یا به ادمین سایت پیام بدهید",
+               variant: "destructive",
+            });
+
+         const decoder = new TextDecoder();
+         const reader = stream.getReader();
+         let aiChunk = "";
+         while (true) {
+            const { done, value } = await reader.read();
+            if (done) {
+               break;
             }
-            let updatedPages = [...old.pages];
-            let latestMessages = updatedPages[0].fileMessages;
-            latestMessages = [
-               {
-                  createdAt: new Date().toISOString(),
-                  id: "ai-resposne",
-                  isUserMassage: false,
-                  text: data.response ?? "failed to get response",
-               },
-               ...latestMessages,
-            ];
+            const newChunk = decoder.decode(value, { stream: true });
+            aiChunk += newChunk;
 
-            updatedPages[0].fileMessages = latestMessages;
+            // add it to trpc getFile state
 
-            return {
-               ...old,
-               pages: updatedPages,
-            };
-         });
+            changeInfiniteState(aiChunk);
+         }
+         reader.releaseLock();
       },
       onSettled: async () => {
          setIsLoading(false);
@@ -161,6 +158,56 @@ export default function ChatContextProvider({ fileId, children }: AppProps) {
    const handleInputChange = (ev: ChangeEvent<HTMLTextAreaElement>) =>
       setMessage(ev.target.value);
 
+   const changeInfiniteState = (aiChunk: string) =>
+      trpcUtils.getFileMessages.setInfiniteData({ fileId }, (old) => {
+         if (!old) {
+            return {
+               pageParams: [],
+               pages: [],
+            };
+         }
+
+         let updatedPages = [...old.pages];
+         let latestPageMessages = old.pages[0].fileMessages;
+
+         const isAiMessageInserted = old.pages.some((page) =>
+            page.fileMessages.some((message) => message.id === "ai-response")
+         );
+
+         if (isAiMessageInserted) {
+            console.log("editting latest page messages");
+
+            latestPageMessages = latestPageMessages.map((message) => {
+               if (message.id === "ai-response")
+                  return {
+                     ...message,
+                     text: aiChunk,
+                  };
+
+               return message;
+            });
+         } else {
+            console.log("create ai message");
+
+            // create ai response
+            latestPageMessages = [
+               {
+                  createdAt: new Date().toISOString(),
+                  id: "ai-response",
+                  isUserMassage: false,
+                  text: aiChunk,
+               },
+               ...latestPageMessages,
+            ];
+         }
+         updatedPages[0].fileMessages = latestPageMessages;
+         console.log(updatedPages[0].fileMessages[0]);
+
+         return {
+            pageParams: old.pageParams,
+            pages: updatedPages,
+         };
+      });
    return (
       <ChatContext.Provider
          value={{ message, addMessage, handleInputChange, isLoading }}
