@@ -14,7 +14,8 @@ type MessageProps = {
 };
 
 export default function Messages({ fileId }: MessageProps) {
-   const { isLoading: isAiMessageLoading } = useContext(ChatContext);
+   const { isLoading: isAiMessageLoading, aiGeneratingResponse } =
+      useContext(ChatContext);
    const { ref: lastMessageRef, inView } = useInView({
       triggerOnce: true,
    });
@@ -51,7 +52,15 @@ export default function Messages({ fileId }: MessageProps) {
       ),
    };
 
+   const aiGeneratingMessage = {
+      createdAt: new Date().toISOString(),
+      id: "ai-response",
+      isUserMassage: false,
+      text: aiGeneratingResponse,
+   };
+
    const combinedMessages = [
+      ...(aiGeneratingResponse ? [aiGeneratingMessage] : []),
       ...(isAiMessageLoading ? [loadingMessages] : []),
       ...(messages ?? []),
    ];

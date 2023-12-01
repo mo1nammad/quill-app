@@ -10,8 +10,8 @@ export default function ThemeSwitch() {
    const [isDark, setIsDark] = useState(false);
 
    useEffect(() => {
-      const storage = window?.localStorage ?? null;
-      const themeSaved = storage?.getItem("Local-theme");
+      const storage = window.localStorage;
+      const themeSaved = storage.getItem("Local-theme");
 
       if (!themeSaved && theme === "system") {
          if (systemTheme === "dark") {

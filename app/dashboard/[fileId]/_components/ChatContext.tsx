@@ -4,6 +4,7 @@ import React, {
    ChangeEvent,
    PropsWithChildren,
    createContext,
+   useEffect,
    useRef,
    useState,
 } from "react";
@@ -18,12 +19,14 @@ type ChatContextType = {
    message: string;
    handleInputChange: (ev: ChangeEvent<HTMLTextAreaElement>) => void;
    isLoading: boolean;
+   aiGeneratingResponse: string | undefined;
 };
 export const ChatContext = createContext<ChatContextType>({
    addMessage() {},
    message: "",
    handleInputChange() {},
    isLoading: false,
+   aiGeneratingResponse: undefined,
 });
 
 type AppProps = PropsWithChildren<{
@@ -33,6 +36,11 @@ type AppProps = PropsWithChildren<{
 export default function ChatContextProvider({ fileId, children }: AppProps) {
    const [message, setMessage] = useState("");
    const [isLoading, setIsLoading] = useState(false);
+
+   const [aiGeneratingResponse, setAiGeneratingResponse] = useState<
+      string | undefined
+   >(undefined);
+
    const { toast } = useToast();
 
    const backupMessage = useRef("");
@@ -132,24 +140,26 @@ export default function ChatContextProvider({ fileId, children }: AppProps) {
 
          const decoder = new TextDecoder();
          const reader = stream.getReader();
-         let aiChunk = "";
+
          while (true) {
             const { done, value } = await reader.read();
             if (done) {
                break;
             }
-            const newChunk = decoder.decode(value, { stream: true });
-            aiChunk += newChunk;
+            const readChunk = decoder.decode(value);
 
-            // add it to trpc getFile state
-
-            changeInfiniteState(aiChunk);
+            setTimeout(() => {
+               setAiGeneratingResponse((prv) =>
+                  !prv ? readChunk : prv + readChunk
+               );
+            }, 200);
          }
          reader.releaseLock();
       },
       onSettled: async () => {
          setIsLoading(false);
          await trpcUtils.getFileMessages.invalidate({ fileId });
+         setAiGeneratingResponse(undefined);
       },
    });
 
@@ -158,59 +168,15 @@ export default function ChatContextProvider({ fileId, children }: AppProps) {
    const handleInputChange = (ev: ChangeEvent<HTMLTextAreaElement>) =>
       setMessage(ev.target.value);
 
-   const changeInfiniteState = (aiChunk: string) =>
-      trpcUtils.getFileMessages.setInfiniteData({ fileId }, (old) => {
-         if (!old) {
-            return {
-               pageParams: [],
-               pages: [],
-            };
-         }
-
-         let updatedPages = [...old.pages];
-         let latestPageMessages = old.pages[0].fileMessages;
-
-         const isAiMessageInserted = old.pages.some((page) =>
-            page.fileMessages.some((message) => message.id === "ai-response")
-         );
-
-         if (isAiMessageInserted) {
-            console.log("editting latest page messages");
-
-            latestPageMessages = latestPageMessages.map((message) => {
-               if (message.id === "ai-response")
-                  return {
-                     ...message,
-                     text: aiChunk,
-                  };
-
-               return message;
-            });
-         } else {
-            console.log("create ai message");
-
-            // create ai response
-            latestPageMessages = [
-               {
-                  createdAt: new Date().toISOString(),
-                  id: "ai-response",
-                  isUserMassage: false,
-                  text: aiChunk,
-               },
-               ...latestPageMessages,
-            ];
-         }
-         updatedPages[0].fileMessages = latestPageMessages;
-         console.log(updatedPages[0].fileMessages[0]);
-
-         return {
-            pageParams: old.pageParams,
-            pages: updatedPages,
-         };
-      });
    return (
       <ChatContext.Provider
-         value={{ message, addMessage, handleInputChange, isLoading }}
+         value={{
+            message,
+            addMessage,
+            handleInputChange,
+            isLoading,
+            aiGeneratingResponse,
+         }}
       >
          {children}
       </ChatContext.Provider>
