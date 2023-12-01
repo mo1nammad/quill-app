@@ -85,7 +85,8 @@ export async function POST(req: Request) {
 
       const response = await openai.chat.completions.create({
          model: "gpt-3.5-turbo-0301",
-
+         temperature: 0,
+         stream: true,
          messages: [
             {
                role: "system",
@@ -114,33 +115,20 @@ export async function POST(req: Request) {
          ],
       });
 
-      // const stream = OpenAIStream(response, {
-      //    onCompletion: async (completion) => {
-      //       await db.message.create({
-      //          data: {
-      //             text: completion,
-      //             isUserMassage: false,
-      //             fileId,
-      //             userId,
-      //          },
-      //       });
-      //    },
-      // });
-
-      // return new StreamingTextResponse(stream);
-      const aiResponse = await db.message.create({
-         data: {
-            isUserMassage: false,
-            text:
-               response.choices[0].message.content ??
-               "مشکلی با هوش مصنوعی بوجود اومده لطفا با ادمین سایت تماس حاصل کنید",
-            fileId,
-            userId,
+      const stream = OpenAIStream(response, {
+         onCompletion: async (completion) => {
+            await db.message.create({
+               data: {
+                  text: completion,
+                  isUserMassage: false,
+                  fileId,
+                  userId,
+               },
+            });
          },
       });
-      return NextResponse.json({
-         response: aiResponse.text,
-      });
+
+      return new StreamingTextResponse(stream);
    } catch (error) {
       console.log("[CHAT_MESSAGE]:POST", error);
       return new NextResponse("internal server error", { status: 500 });
